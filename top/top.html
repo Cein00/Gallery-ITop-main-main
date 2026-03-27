@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
+    <script src="../theme-loader.js"></script>
+    <title>Топ недели — GALLERYITOP</title>
+</head>
+<body class="search-page-body">
+    <div class="login-glow"></div>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <a href="../search/search.html"><div class="icon"><img src="../img/search.png" alt="Поиск"></div></a>
+            <a href="../profile/profile.html"><div class="icon"><img src="../img/user.png" alt="Профиль"></div></a>
+            <a href="../top/top.html"><div class="icon"><img src="../img/stats.png" alt="Топ"></div></a>
+            <a href="../settings/settings.html"><div class="icon"><img src="../img/settings.png" alt="Настройки"></div></a>
+        </aside>
+
+        <main class="main-content glass-panel">
+            <div class="top-header">
+                <h1>ТОП НЕДЕЛИ</h1>
+                <p>Лучшие авторы и активность сообщества</p>
+            </div>
+            <div id="statsContainer" class="stats-overview"></div>
+            <div class="podium" id="podiumContainer"></div>
+            <div class="top-list" id="topList"></div>
+        </main>
+    </div>
+
+    <script src="scriptTop.js" defer></script>
+</body>
+</html>

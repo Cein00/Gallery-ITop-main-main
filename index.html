@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="theme-loader.js"></script>
+    <title>Вход — GALLERYITOP</title>
+</head>
+<body class="login-body">
+    <div class="login-glow"></div> <main class="login-wrapper">
+        <form class="login-card" id="loginForm">
+            <div class="login-header">
+                <h2>ВХОД В GALLERYITOP</h2>
+                <p>Добро пожаловать обратно!</p>
+            </div>
+            
+            <div class="input-group">
+                <div class="input-modern">
+                    <img src="img/user.png" alt="" class="input-icon">
+                    <input type="text" id="loginInput" placeholder="Имя пользователя" required>
+                </div>
+                
+                <div class="input-modern password-field">
+                    <img src="img/lock.png" alt="" class="input-icon">
+                    <input type="password" id="passInput" placeholder="Пароль" required>
+                </div>
+            </div>
+            
+            <div class="action-buttons vertical-buttons">
+                <button type="submit" class="button-modern submit-button">ВОЙТИ</button>
+                
+                <div class="secondary-links" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <a href="registration/registration.html" class="button-link">Нет аккаунта? Регистрация</a>
+                    <a href="search/search.html" id="guestLink" class="button-link" style="opacity: 0.4;">Продолжить как гость</a>
+                </div>
+            </div>
+        </form>
+    </main>
+    
+    <script src="auth.js"></script>
+</body>
+</html>

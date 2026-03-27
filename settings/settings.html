@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
+    <script src="../theme-loader.js"></script>
+    <title>Настройки — GALLERYITOP</title>
+</head>
+<body class="search-page-body">
+    <div class="login-glow"></div>
+    <div class="app-container">
+        <aside class="sidebar">
+            <a href="../search/search.html"><div class="icon"><img src="../img/search.png" alt="Поиск"></div></a>
+            <a href="../profile/profile.html"><div class="icon"><img src="../img/user.png" alt="Профиль"></div></a>
+            <a href="../top/top.html"><div class="icon"><img src="../img/stats.png" alt="Топ"></div></a>
+            <a href="../settings/settings.html"><div class="icon"><img src="../img/settings.png" alt="Настройки"></div></a>
+        </aside>
+
+        <main class="main-content glass-panel">
+            <header class="top-header">
+                <h1>НАСТРОЙКИ</h1>
+            </header>
+
+            <section class="settings-section">
+                <!-- Внешний вид -->
+                <div class="settings-block">
+                    <h3>ВНЕШНИЙ ВИД</h3>
+                    <div class="theme-switcher">
+                        <button class="theme-btn" data-theme-val="light">СВЕТЛАЯ</button>
+                        <button class="theme-btn" data-theme-val="dark">ТЕМНАЯ</button>
+                        <button class="theme-btn" data-theme-val="system">СИСТЕМНАЯ</button>
+                    </div>
+                </div>
+
+                <!-- Аккаунт -->
+                <div class="settings-block">
+                    <h3>АККАУНТ</h3>
+                    <div class="account-actions">
+                        <button class="button-modern secondary-button" id="logoutBtn">ВЫЙТИ ИЗ АККАУНТА</button>
+                        <button class="button-modern delete-account-btn" id="deleteAccBtn">УДАЛИТЬ АККАУНТ</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Модальное окно (остаётся без изменений) -->
+    <div class="modal-overlay" id="confirmModal" style="display: none;">
+        <div class="modal-glass-card confirm-card">
+            <h2 id="confirmTitle">ВЫ УВЕРЕНЫ?</h2>
+            <p id="confirmText">Это действие нельзя будет отменить.</p>
+            <div class="action-buttons horizontal-buttons">
+                <button class="button-modern submit-button green-btn" id="confirmYes">ДА, ПОДТВЕРЖДАЮ</button>
+                <button class="button-link" id="confirmNo">ОТМЕНА</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../auth.js"></script>
+    <script src="setting.js"></script>
+</body>
+</html>

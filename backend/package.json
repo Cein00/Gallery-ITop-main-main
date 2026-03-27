@@ -1,0 +1,25 @@
+{
+  "name": "gallery-itop-mongo-tailored",
+  "version": "1.0.0",
+  "description": "Gallery-ITop backend tailored for the current HTML structure",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mangodb": "^1.0.0",
+    "mongodb": "^7.1.1",
+    "mongoose": "^8.17.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

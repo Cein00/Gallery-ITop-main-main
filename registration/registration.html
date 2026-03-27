@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../style.css">
+    <script src="../theme-loader.js"></script>
+    <title>Регистрация — GALLERYITOP</title>
+</head>
+<body class="login-body">
+    <main class="login-wrapper">
+        <div class="login-glow"></div>
+        
+        <form class="login-card registration-card" id="registerForm">
+            <div class="login-header">
+                <h2>СОЗДАТЬ АККАУНТ</h2>
+                <p>Присоединяйтесь к GALLERYITOP</p>
+            </div>
+            
+            <div class="input-group">
+                <div class="input-modern">
+                    <img src="../img/user.png" alt="" class="input-icon">
+                    <input type="text" id="regLogin" placeholder="Имя пользователя" required>
+                </div>
+
+                <div class="custom-select" id="regRoleContainer">
+                    <div class="select-trigger input-modern">
+                        <img src="../img/role.png" alt="" class="input-icon">
+                        <span id="regRoleLabel">Выберите направление</span>
+                        <img src="../img/angle-circle-up.png" alt="" class="arrow-icon">
+                    </div>
+                    <div class="select-options">
+                        <div class="option" data-value="Программист">Программист</div>
+                        <div class="option" data-value="Дизайнер">Дизайнер</div>
+                        <div class="option" data-value="Преподаватель">Преподаватель</div>
+                    </div>
+                    <input type="hidden" id="regRole" required>
+                </div>
+
+                <div class="input-modern password-field">
+                    <img src="../img/lock.png" alt="" class="input-icon">
+                    <input type="password" id="regPass" placeholder="Пароль" required>
+                    <img src="../img/eye.png" alt="" class="eye-icon" id="togglePass">
+                </div>
+
+                <div class="input-modern password-field">
+                    <img src="../img/lock.png" alt="" class="input-icon">
+                    <input type="password" id="regPassConfirm" placeholder="Повторите пароль" required>
+                    <img src="../img/eye.png" alt="" class="eye-icon" id="togglePassConfirm">
+                </div>
+            </div>
+            
+            <div class="action-buttons horizontal-buttons">
+                <button type="submit" class="button-modern submit-button">ЗАРЕГИСТРИРОВАТЬСЯ</button>
+                <a href="../index.html" class="button-link">Уже есть аккаунт? Войти</a>
+            </div>
+        </form>
+    </main>
+
+    <script src="../auth.js"></script>
+</body>
+</html>
