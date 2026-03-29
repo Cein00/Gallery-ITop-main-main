@@ -166,156 +166,185 @@ async function loadProfilePage() {
   if (!profileView) return;
 
   const token = getToken();
-  if (!token) {
-      console.warn("Нет токена — профиль не загружаем");
-      return;
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetUserId = urlParams.get('id');
+  let currentUser = null;
+  let isOwnProfile = false;
+
+  // 1. Текущий пользователь (если залогинен)
+  if (token) {
+    try { currentUser = await api('/auth/me'); } catch(e) { console.warn(e); }
   }
 
-  // Находим все элементы
+  // 2. Свой или чужой профиль?
+  if (targetUserId && currentUser && currentUser._id === targetUserId) isOwnProfile = true;
+  else if (!targetUserId && currentUser) isOwnProfile = true;
+  else if (targetUserId && (!currentUser || currentUser._id !== targetUserId)) isOwnProfile = false;
+  else { window.location.href = '../login.html'; return; }
+
+  let user = null;
+  let userWorks = [];
+
+  try {
+    // 3. Загружаем данные пользователя
+    if (isOwnProfile && currentUser) user = currentUser;
+    else if (targetUserId) user = await api(`/users/${targetUserId}`);
+    else throw new Error('Не удалось определить пользователя');
+
+    // 4. Отображаем шапку
+    const displayAvatar = document.getElementById('displayAvatar');
+    const displayNickname = document.getElementById('displayNickname');
+    const displayRole = document.getElementById('displayRole');
+    if (displayAvatar) displayAvatar.src = user.avatar || '../img/user.png';
+    if (displayNickname) displayNickname.textContent = `@${user.username}`;
+    if (displayRole) displayRole.textContent = user.role || 'Программист';
+    
+    updateContactButtons(user.contacts);
+    if (typeof renderProfile === 'function') renderProfile(user);
+
+    // 5. Загружаем работы
+    try {
+      if (isOwnProfile && currentUser) {
+        // Вместо await api('/works/my') используем:
+        userWorks = await api(`/works?userId=${currentUser._id}`);
+      } else if (targetUserId) {
+        userWorks = await api(`/works?userId=${targetUserId}`);
+      }
+    } catch(err) {
+      console.error(err);
+      userWorks = [];
+    }
+
+    // 6. Отрисовка работ
+    const container = document.querySelector('.gallery-grid');
+    if (container) {
+      container.innerHTML = '';
+      if (userWorks.length) {
+        userWorks.forEach(work => {
+          if (typeof createCard === 'function') container.appendChild(createCard(work));
+        });
+      } else {
+        container.innerHTML = '<p class="no-works">У пользователя пока нет работ</p>';
+      }
+    }
+
+    // 7. Кнопка редактирования (только для своего профиля)
+    const openEditBtn = document.getElementById('openEditBtn');
+    const editModal = document.getElementById('profileEditModal');
+    if (openEditBtn) {
+      if (isOwnProfile) {
+        openEditBtn.style.display = 'flex';
+        setupEditProfileHandlers(user, editForm, editModal);
+      } else {
+        openEditBtn.style.display = 'none';
+      }
+    }
+
+  } catch (error) {
+    console.error('Ошибка загрузки профиля:', error);
+    toast(error.message);
+    if (error.message.includes('401') && !targetUserId) {
+      clearSession();
+      window.location.href = '../login.html';
+    }
+  }
+}
+
+function renderProfileHeader(user, isOwn) {
   const displayAvatar = document.getElementById('displayAvatar');
   const displayNickname = document.getElementById('displayNickname');
   const displayRole = document.getElementById('displayRole');
+  
+  if (displayAvatar) displayAvatar.src = user.avatar || '../img/user.png';
+  if (displayNickname) displayNickname.textContent = `@${user.username}`;
+  if (displayRole) displayRole.textContent = user.role || 'Программист';
+}
+
+// Функция настройки редактирования (выносим код из старой loadProfilePage)
+function setupEditProfileHandlers(user, editForm, editModal) {
   const editAvatarPreview = document.getElementById('editAvatarPreview');
   const avatarUpload = document.getElementById('avatarUpload');
   const editNickname = document.getElementById('editNickname');
   const editPass = document.getElementById('editPass');
   const editPassConfirm = document.getElementById('editPassConfirm');
-  const modal = document.getElementById('profileEditModal');
-  const openBtn = document.getElementById('openEditBtn');
-  const closeBtn = document.getElementById('closeModalBtn');
   const editTg = document.getElementById('editTg');
   const editEmail = document.getElementById('editEmail');
-
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const openEditBtn = document.getElementById('openEditBtn');
+  
+  if (editAvatarPreview) editAvatarPreview.src = user.avatar || '../img/user.png';
+  if (editNickname) editNickname.value = user.username || '';
+  if (editTg) editTg.value = user.contacts?.tg || '';
+  if (editEmail) editEmail.value = user.contacts?.email || '';
+  
   let avatarDataUrl = null;
-
-  try {
-    // 1. Загружаем данные пользователя
-    const user = await api('/auth/me'); 
-    
-    // Отрисовываем шапку (если есть такая функция)
-    if (typeof renderProfile === 'function') renderProfile(user);
-    
-    // Заполняем данные (используем 'user', а не 'me')
-    if (displayNickname) displayNickname.textContent = `@${user.username}`;
-    if (displayRole) displayRole.textContent = user.role || 'Программист';
-
-    const avatarSrc = user.avatar || '../img/user.png';
-    if (displayAvatar) displayAvatar.src = avatarSrc;
-    if (editAvatarPreview) editAvatarPreview.src = avatarSrc;
-    if (editNickname) editNickname.value = user.username || '';
-
-    if (editTg) editTg.value = user.contacts?.tg || '';
-    if (editEmail) editEmail.value = user.contacts?.email || '';
-
-    // Настраиваем кнопки контактов
-    updateContactButtons(user.contacts);
-
-    // --- ЗАГРУЗКА РАБОТ (добавил сюда) ---
-    try {
-        const works = await api('/works/my');
-        const container = document.querySelector('.gallery-grid');
-        if (container) {
-            container.innerHTML = '';
-            if (works && works.length > 0) {
-                works.forEach(work => {
-                    // Передаем работу в функцию создания карточки (из full-see.js)
-                    container.appendChild(createCard(work));
-                });
-            } else {
-                container.innerHTML = '<p class="no-works">У вас пока нет работ</p>';
-            }
-        }
-    } catch (workErr) {
-        console.error("Ошибка загрузки работ:", workErr);
-    }
-
-    // --- ОБРАБОТЧИКИ СОБЫТИЙ ---
-
-    avatarUpload?.addEventListener('change', async () => {
+  
+  if (avatarUpload) {
+    avatarUpload.onchange = async () => {
       const file = avatarUpload.files?.[0];
       if (!file) return;
-      // Предполагаем, что fileToDataUrl объявлена глобально
       avatarDataUrl = await fileToDataUrl(file);
       if (editAvatarPreview) editAvatarPreview.src = avatarDataUrl;
-    });
-
-    openBtn?.addEventListener('click', () => { if (modal) modal.style.display = 'flex'; });
-    closeBtn?.addEventListener('click', () => { if (modal) modal.style.display = 'none'; });
-    modal?.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
-
-    editForm?.addEventListener('submit', async (e) => {
+    };
+  }
+  
+  if (openEditBtn) openEditBtn.onclick = () => { if (editModal) editModal.style.display = 'flex'; };
+  if (closeModalBtn) closeModalBtn.onclick = () => { if (editModal) editModal.style.display = 'none'; };
+  if (editModal) editModal.onclick = (e) => { if (e.target === editModal) editModal.style.display = 'none'; };
+  
+  if (editForm) {
+    editForm.onsubmit = async (e) => {
       e.preventDefault();
       try {
         let tgValue = editTg?.value.trim() || "";
         if (tgValue.startsWith('@')) tgValue = tgValue.substring(1);
-
         const payload = {
-            username: editNickname?.value.trim() || user.username,
-            avatar: avatarDataUrl || user.avatar || null,
-            contacts: {
-                tg: tgValue || null,
-                email: editEmail?.value.trim() || null
-            }
+          username: editNickname?.value.trim() || user.username,
+          avatar: avatarDataUrl || user.avatar || null,
+          contacts: { tg: tgValue || null, email: editEmail?.value.trim() || null }
         };
-
         const pass = editPass?.value || '';
         const passConfirm = editPassConfirm?.value || '';
         if (pass || passConfirm) {
-            payload.password = pass;
-            payload.passwordConfirm = passConfirm;
+          if (pass !== passConfirm) { toast('Пароли не совпадают'); return; }
+          payload.password = pass;
+          payload.passwordConfirm = passConfirm;
         }
-
-        const updated = await api('/users/me', {
-            method: 'PUT',
-            body: JSON.stringify(payload)
-        });
-
-        if (displayNickname) displayNickname.textContent = `@${updated.username}`;
-        if (displayAvatar) displayAvatar.src = updated.avatar || '../img/user.png';
+        const updated = await api('/users/me', { method: 'PUT', body: JSON.stringify(payload) });
+        document.getElementById('displayNickname').textContent = `@${updated.username}`;
+        document.getElementById('displayAvatar').src = updated.avatar || '../img/user.png';
         updateContactButtons(updated.contacts);
-
         toast('Профиль сохранён');
-        if (modal) modal.style.display = 'none';
-      } catch (error) {
-        toast(error.message);
-      }
-    });
+        if (editModal) editModal.style.display = 'none';
+      } catch (error) { toast(error.message); }
+    };
+  }
+}
 
-  } catch (error) {
-    console.error("Ошибка:", error);
-    if (error.message.includes('401')) {
-        clearSession();
-        window.location.href = '../login.html';
+// Обновление кнопок контактов
+function updateContactButtons(contacts) {
+  const tgLink = document.querySelector('.tg-link');
+  const mailLink = document.querySelector('.mail-link');
+  
+  if (tgLink) {
+    if (contacts && contacts.tg) {
+      const pureTg = contacts.tg.replace('@', '').trim();
+      tgLink.href = `https://t.me/${pureTg}`;
+      tgLink.style.display = 'flex';
     } else {
-        toast(error.message);
+      tgLink.style.display = 'none';
     }
   }
-
-  function updateContactButtons(contacts) {
-    const tgLink = document.querySelector('.tg-link');
-    const mailLink = document.querySelector('.mail-link');
-
-    if (tgLink) {
-        if (contacts && contacts.tg) {
-            const pureTg = contacts.tg.replace('@', '').trim();
-            tgLink.href = `https://t.me/${pureTg}`;
-            tgLink.style.display = 'flex';
-        } else {
-            tgLink.style.display = 'none';
-        }
-    }
-
-    if (mailLink) {
-        if (contacts && contacts.email) {
-            const email = contacts.email.trim();
-            mailLink.style.display = 'flex';
-            mailLink.onclick = (e) => {
-                e.preventDefault();
-                navigator.clipboard.writeText(email).then(() => toast('Почта скопирована'));
-            };
-        } else {
-            mailLink.style.display = 'none';
-        }
+  
+  if (mailLink) {
+    if (contacts && contacts.email) {
+      mailLink.style.display = 'flex';
+      mailLink.onclick = (e) => {
+        e.preventDefault();
+        navigator.clipboard.writeText(contacts.email.trim()).then(() => toast('Почта скопирована'));
+      };
+    } else {
+      mailLink.style.display = 'none';
     }
   }
 }
@@ -325,3 +354,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initRegisterPage();
     loadProfilePage();
 });
+
+// Получение пользователя по ID
+async function getUserById(userId) {
+  return await api(`/users/${userId}`);
+}
+
+// Загрузка работ пользователя (для чужого профиля)
+async function getWorksByUserId(userId) {
+  return await api(`/works?userId=${userId}`);
+}

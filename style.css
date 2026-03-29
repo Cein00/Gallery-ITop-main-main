@@ -3860,3 +3860,20 @@ body.dark-theme .top-header h1 {
     text-shadow: none;
 }
 
+/* Ссылка на автора в модалке */
+.modal-author-link, .comment-author-link {
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s;
+}
+
+.modal-author-link:hover, .comment-author-link:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+}
+
+/* Специфический цвет для ника в модалке, если нужно выделить */
+.modal-author-link {
+    color: var(--profile-role-color, #8a2be2);
+    font-weight: bold;
+}

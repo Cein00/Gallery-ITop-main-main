@@ -5,6 +5,17 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
+// Получение пользователя по ID (публичный)
+router.get('/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-passwordHash');
+    if (!user) return res.status(404).json({ message: 'Пользователь не найден' });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: 'Ошибка получения пользователя', error: error.message });
+  }
+});
+
 router.put('/me', auth, async (req, res) => {
   try {
     const { username, role, avatar, password, passwordConfirm, contacts } = req.body;

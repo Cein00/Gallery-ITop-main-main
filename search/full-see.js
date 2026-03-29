@@ -1,52 +1,3 @@
-// const TOKEN_KEY = 'gallery_token';
-
-// function getToken() {
-//   return localStorage.getItem(TOKEN_KEY);
-// }
-
-// function toast(message) {
-//   const el = document.getElementById('toastNotification') || document.querySelector('.custom-toast');
-//   if (el) {
-//     el.textContent = message;
-//     el.style.display = 'block';
-//     el.classList.add('show');
-//     setTimeout(() => el.classList.remove('show'), 1800);
-//     return;
-//   }
-//   alert(message);
-// }
-
-// async function api(path, options = {}) {
-//   const headers = { ...(options.headers || {}) };
-//   const token = getToken();
-//   if (token) {
-//     headers.Authorization = `Bearer ${token}`;
-//   }
-
-//   if (!(options.body instanceof FormData) && options.body !== undefined) {
-//     headers['Content-Type'] = 'application/json';
-//   }
-
-//   const response = await fetch(`/api${path}`, {
-//     ...options,
-//     headers
-//   });
-
-//   const text = await response.text();
-//   let data = null;
-//   try {
-//     data = text ? JSON.parse(text) : null;
-//   } catch {
-//     data = text;
-//   }
-
-//   if (!response.ok) {
-//     throw new Error(data?.message || 'Ошибка запроса');
-//   }
-
-//   return data;
-// }
-
 function currentPageType() {
   return document.getElementById('profileView') ? 'profile' : 'search';
 }
@@ -69,14 +20,27 @@ function createCard(work) {
   imageWrapper.appendChild(img);
   article.appendChild(imageWrapper);
 
-  // ПРОВЕРКА: Если это НЕ страница профиля, добавляем никнейм
+  // ПРОВЕРКА: Если это НЕ страница профиля, добавляем КЛИКАБЕЛЬНЫЙ никнейм
   if (currentPageType() !== 'profile') {
-    const name = document.createElement('p');
-    name.className = 'user-name';
-    name.textContent = `@${work.user?.username || 'USER'}`;
-    article.appendChild(name);
+    const nameContainer = document.createElement('p');
+    nameContainer.className = 'user-name';
+    
+    // Создаем ссылку вместо простого текста
+    const userLink = document.createElement('a');
+    userLink.href = `../profile/profile.html?id=${work.user?._id}`;
+    userLink.textContent = `@${work.user?.username || 'USER'}`;
+    userLink.style.textDecoration = 'none';
+    userLink.style.color = 'inherit';
+    
+    // Останавливаем всплытие клика, чтобы при нажатии на ник 
+    // не открывалось модальное окно самой работы
+    userLink.addEventListener('click', (e) => e.stopPropagation());
+
+    nameContainer.appendChild(userLink);
+    article.appendChild(nameContainer);
   }
 
+  // Клик по самой карточке открывает модалку
   article.addEventListener('click', () => openWorkModal(work._id));
   return article;
 }
@@ -176,7 +140,9 @@ async function openWorkModal(workId) {
       list.innerHTML = currentComments.length
         ? currentComments.map((c) => `
             <div class="comment-item">
-              <strong>@${c.user?.username || 'user'}</strong>
+              <a href="../profile/profile.html?id=${c.user?._id}" class="comment-author-link">
+                <strong>@${c.user?.username || 'user'}</strong>
+              </a>
               <span>${c.text}</span>
             </div>
           `).join('')
@@ -188,7 +154,11 @@ async function openWorkModal(workId) {
       if (commentsModal) commentsModal.style.display = 'flex';
     }
 
-    workAuthor.textContent = `@${currentWork.user?.username || 'USER'}`;
+    workAuthor.innerHTML = `
+      <a href="../profile/profile.html?id=${currentWork.user?._id}" class="modal-author-link">
+        @${currentWork.user?.username || 'USER'}
+      </a>`;
+
     workDesc.textContent = currentWork.description || '';
     workLink.innerHTML = currentWork.link
       ? `<a href="${currentWork.link}" target="_blank" rel="noopener noreferrer">${currentWork.link}</a>`
@@ -274,24 +244,6 @@ async function openWorkModal(workId) {
     toast(error.message);
   }
 }
-// async function loadUserWorks() {
-//     const container = document.querySelector('.gallery-grid');
-//     if (!container || currentPageType() !== 'profile') return;
-
-//     try {
-//         // Запрос к API для получения работ именно текущего пользователя
-//         const works = await api('/works/my'); // Путь может зависеть от твоего бэкенда
-//         container.innerHTML = ''; 
-        
-//         works.forEach(work => {
-//             container.appendChild(createCard(work));
-//         });
-//     } catch (error) {
-//         console.error('Ошибка загрузки работ:', error);
-//     }
-// }
-
-// Вызываем при загрузке страницы
-// document.addEventListener('DOMContentLoaded', loadUserWorks);
-
-renderWorks();
+if (!document.getElementById('profileView')) {
+  renderWorks();
+}
